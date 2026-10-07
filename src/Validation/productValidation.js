@@ -15,6 +15,7 @@ const productFields = {
     .default(""),
 
   price: z
+    .coerce
     .number({
       error: "Price must be a number",
     })
@@ -34,16 +35,12 @@ const productFields = {
     .max(50, "Brand cannot exceed 50 characters"),
 
   stock: z
+    .coerce
     .number({
       error: "Stock must be a number",
     })
     .int("Stock must be an integer")
     .nonnegative("Stock cannot be negative"),
-
-  image: z
-    .url("Image must be a valid URL")
-    .optional()
-    .or(z.literal("")),
 };
 
 export const createProductSchema = z

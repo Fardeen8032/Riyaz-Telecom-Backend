@@ -16,9 +16,7 @@ const productFields = {
 
   price: z
     .coerce
-    .number({
-      error: "Price must be a number",
-    })
+    .number({ error: "Price must be a number" })
     .finite("Price must be a valid number")
     .nonnegative("Price cannot be negative"),
 
@@ -33,14 +31,6 @@ const productFields = {
     .trim()
     .min(2, "Brand is required")
     .max(50, "Brand cannot exceed 50 characters"),
-
-  stock: z
-    .coerce
-    .number({
-      error: "Stock must be a number",
-    })
-    .int("Stock must be an integer")
-    .nonnegative("Stock cannot be negative"),
 };
 
 export const createProductSchema = z

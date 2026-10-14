@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -24,10 +25,31 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    // Optional because Google users don't need a password
     password: {
       type: String,
-      required: true,
+      required: false,
       select: false,
+    },
+
+    // NEW: Firebase/Google user ID
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    // NEW: Authentication provider
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    // NEW: Google profile photo
+    profilePicture: {
+      type: String,
+      default: "",
     },
 
     role: {

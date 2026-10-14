@@ -4,6 +4,7 @@ import { registerSchema,loginSchema } from "../../Validation/authValidation.js";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/jwt.js";
 import AppError from "../../utils/AppError.js";
 import asyncHandler from "../../utils/asyncHandler.js";
+import verifyGoogleIdToken from "../../Service/firebaseAuthService.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   // 1. Validate request body
@@ -168,6 +169,63 @@ export const getProfile = asyncHandler(async (req, res) => {
         email: user.email,
         phone: user.phone,
         role: user.role,
+      },
+    },
+  });
+});
+
+export const googleLogin = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+
+  const googleUser = await verifyGoogleIdToken(idToken);
+
+  let user = await User.findOne({
+    email: googleUser.email,
+  });
+
+  if (user) {
+    // Link the verified Google identity to an existing account.
+    if (
+      user.googleId &&
+      user.googleId !== googleUser.googleId
+    ) {
+      throw new AppError(
+        "This email is already linked to another Google account.",
+        409
+      );
+    }
+
+    user.googleId = googleUser.googleId;
+
+    if (!user.profilePicture && googleUser.profilePicture) {
+      user.profilePicture = googleUser.profilePicture;
+    }
+
+    await user.save();
+  } else {
+    user = await User.create({
+      name: googleUser.name,
+      email: googleUser.email,
+      googleId: googleUser.googleId,
+      profilePicture: googleUser.profilePicture,
+      authProvider: "google",
+    });
+  }
+
+  const accessToken = generateAccessToken(user._id);
+
+  res.status(200).json({
+    success: true,
+    message: "Google sign-in successful.",
+    data: {
+      accessToken,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profilePicture: user.profilePicture,
       },
     },
   });

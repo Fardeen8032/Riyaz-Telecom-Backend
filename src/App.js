@@ -5,6 +5,7 @@ import categoryRoutes from "./routes/categoryRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import notFound  from "./middleware/notFound.js";
 import authRoutes from "./routes/authRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -35,6 +36,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

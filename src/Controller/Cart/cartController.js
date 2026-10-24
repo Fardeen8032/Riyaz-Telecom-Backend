@@ -15,12 +15,29 @@ const getAuthenticatedUserId = (req) => {
   return userId;
 };
 
+const calculateCartTotal = (items) => {
+  const subtotal = items.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  );
+
+  const totalGst = items.reduce((total, item) => {
+    const itemSubtotal = item.product.price * item.quantity;
+    const gstRate = item.product.gstRate ?? 18;
+
+    return total + (itemSubtotal * gstRate) / 100;
+  }, 0);
+
+  return {
+    subtotal: Number(subtotal.toFixed(2)),
+    totalGst: Number(totalGst.toFixed(2)),
+    totalAmount: Number((subtotal + totalGst).toFixed(2)),
+  };
+};
+
 // Populate products so the frontend receives current product details.
 const populateCart = (query) =>
-  query.populate({
-    path: "items.product",
-    select: "name brand price images category",
-  });
+  query.populate("items.product", "name brand price images category gstRate");
 
 // GET /api/cart
 export const getCart = asyncHandler(async (req, res) => {
@@ -30,9 +47,15 @@ export const getCart = asyncHandler(async (req, res) => {
     Cart.findOne({ user: userId })
   );
 
+  const items = cart?.items ?? [];
+  const totals = calculateCartTotal(items);
+
   res.status(200).json({
     success: true,
-    data: cart || { items: [] },
+    data: {
+      items,
+      ...totals
+    },
   });
 });
 
@@ -79,10 +102,16 @@ export const addToCart = asyncHandler(async (req, res) => {
 
   cart = await populateCart(Cart.findById(cart._id));
 
+  const items = cart.items;
+  const totals = calculateCartTotal(items);
+
   res.status(200).json({
     success: true,
     message: "Product added to cart.",
-    data: cart,
+    data: {
+      items,
+      ...totals,
+    }
   });
 });
 
@@ -119,10 +148,16 @@ export const updateCartItem = asyncHandler(async (req, res) => {
 
   const updatedCart = await populateCart(Cart.findById(cart._id));
 
+  const items = updatedCart.items;
+  const totals = calculateCartTotal(items);
+
   res.status(200).json({
     success: true,
     message: "Cart quantity updated.",
-    data: updatedCart,
+    data: {
+      items,
+      ...totals,
+    },
   });
 });
 
@@ -155,10 +190,16 @@ export const removeCartItem = asyncHandler(async (req, res) => {
 
   const updatedCart = await populateCart(Cart.findById(cart._id));
 
+  const items = updatedCart.items;
+  const totals = calculateCartTotal(items);
+
   res.status(200).json({
     success: true,
     message: "Product removed from cart.",
-    data: updatedCart,
+    data: {
+      items,
+      ...totals,
+    },
   });
 });
 
@@ -173,9 +214,15 @@ export const clearCart = asyncHandler(async (req, res) => {
     await cart.save();
   }
 
+  const items = [];
+  const totals = calculateCartTotal(items);
+
   res.status(200).json({
     success: true,
     message: "Cart cleared.",
-    data: { items: [] },
+    data: {
+      items,
+      ...totals,
+    },
   });
 });

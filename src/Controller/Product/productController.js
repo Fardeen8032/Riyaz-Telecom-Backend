@@ -306,3 +306,22 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
     message: "Product deleted successfully",
   });
 });
+
+// GET /api/products/featured-mobiles
+export const getFeaturedMobiles = asyncHandler(async (req, res) => {
+  const limit = 4;
+
+  const products = await Product.find({
+    category: { $regex: /^mobile$/i },
+  })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .select("name description price brand images category createdAt")
+    .lean();
+
+  res.status(200).json({
+    success: true,
+    results: products.length,
+    data: products,
+  });
+});

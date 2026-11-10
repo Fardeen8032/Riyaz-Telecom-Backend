@@ -1,13 +1,14 @@
 const sendBrevoEmail = async ({ recipientEmail, subject, htmlContent, textContent }) => {
   const apiKey = process.env.BREVO_API_KEY;
   const senderEmail = process.env.BREVO_SENDER_EMAIL;
-  const senderName = process.env.BREVO_SENDER_NAME || "Riyaz Telecom";
+  const senderName = process.env.BREVO_SENDER_NAME;
+  const apiUrl = process.env.BREVO_API_URL;
 
   if (!apiKey || !senderEmail) {
     throw new Error("Brevo email configuration is missing.");
   }
 
-  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+  const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       accept: "application/json",

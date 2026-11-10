@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser,loginUser, refreshAccessToken, getProfile, googleLogin } from "../Controller/Auth/authController.js";
+import { registerUser,loginUser, refreshAccessToken, getProfile, googleLogin, forgotPassword,verifyOTP,resetPassword  } from "../Controller/Auth/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -9,5 +9,8 @@ router.post("/login", loginUser);
 router.post("/refresh-token", refreshAccessToken);
 router.get("/profile", authMiddleware, getProfile);
 router.post("/google", googleLogin);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyOTP);
+router.post("/reset-password", resetPassword);
 
 export default router;
